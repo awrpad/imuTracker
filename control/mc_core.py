@@ -7,7 +7,9 @@ Server = namedtuple("Server", ["name", "ip_and_port"])
 class ControlCore:
     __instance = None
     __login_thread = None
-    __connected_servers = [Server(name="test123", ip_and_port=("192.168.0.109", 52555))]
+    __connected_servers = [Server(name="test123", ip_and_port=("192.168.1.78", 52555))]
+    __last_response = None
+    message_ending_string = "_-_@MSG_END"
 
     def __init__(self):
         if ControlCore.__instance == None:
@@ -30,11 +32,19 @@ class ControlCore:
         s.connect(server.ip_and_port)
         if not message.endswith("\n"):
             message = message + "\n"
+        response = ""
         s.sendall(message.encode("ascii"))
-        response = s.recv(2048).decode("ascii")
+        
+        while not ControlCore.message_ending_string in response:
+        #while not response.endswith(ControlCore.message_ending_string):
+            response = response + s.recv(2048).decode("ascii")
+        
         s.close()
 
-        print(response)
+        response = response.replace(ControlCore.message_ending_string, "")
+        self.__last_response = response
+
+        return response
     
     def send_to_all(self, line):
         if(line.startswith("!")):
@@ -45,8 +55,9 @@ class ControlCore:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         for serv in self.__connected_servers:
+            print("Sending to:", serv)
             s.connect(serv.ip_and_port)
-            s.sendall(message.encode("ascii"))
+            s.sendall(message)
             s.close()
         
         print("Sent to all")

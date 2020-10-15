@@ -16,9 +16,9 @@ const uint16_t appLoginPort = 51423;
 const int notYetImplementedResult = 1111;
 const int bufferSize = 30;
 const int nSamples = 1000;
-char ssid[bufferSize] = "probanet";
-char pswd[bufferSize] = "figyelemezproba";
-char deviceName[bufferSize] = "MeasurementUnit #1";
+char ssid[bufferSize] = "your_ssid";
+char pswd[bufferSize] = "your_password";
+char deviceName[bufferSize] = "mu#1";
 TaskRepository taskRepo;
 
 struct bno055_t bno;
@@ -29,6 +29,10 @@ byte accCalibration = 0, magCalibration = 0, gyroCalibration = 0, sysCalibration
 
 WiFiServer server(52555);
 WiFiClient client;
+
+void signalNetworkMessageEnd(){
+  client.print("_-_@MSG_END");
+}
 
 void wr(const char *msg, bool shouldAddLineEnding = false){
   Serial.print(msg);
@@ -152,7 +156,8 @@ void loop() {
       wr("ERROR: "); wr(returnCode); wr(" (command: \""); wr(inputBuffer); wrln("\")");
     }
   }
-  
+
+  signalNetworkMessageEnd();
   printEndOfCurrentIteration();
 }
 

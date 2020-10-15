@@ -30,18 +30,33 @@ class ControlCLI:
         else:
             srvr = self.core.get_server_by_name(where_to)
             if srvr is None:
-                self.__log_function("Invalid name for switching")
+                self.__log_function(f"Invalid name for switching: '{where_to}'")
             else:
                 self.__current_send_location = srvr
+    
+    def save_lastrep_to_file(self, filename):
+        if(self.__last_response is None):
+            self.__log_function("There is no response yet.")
+            return
+        
+        #save to file
+        f = open(filename, "w")
+        f.write(self.__last_response)
+        f.close()
 
     def start(self):
         # Setting up commands
         self.__commands["sw"] = self.set_send_location
         self.__commands["listen"] = self.core.listen_to_login
+        self.__commands["saveresp"] = self.save_lastrep_to_file
         while True:
             line = self.__read_function(self.__get_location_string__() + "/>").strip()
             cmd = line.split(" ")[0]
             self_command = (self.__get_location_string__() == "~") or cmd.startswith(":")
+
+            if cmd.startswith("!"):
+                    self.core.send_to_all(line)
+                    continue
             if(self_command):
                 if cmd.startswith(":"):
                     cmd = cmd[1:]
@@ -49,16 +64,14 @@ class ControlCLI:
                     break
                 elif cmd in self.__commands:
                     try:
-                        self.__commands[cmd](line)
+                        self.__commands[cmd](line.replace(cmd + " ", "").replace(":", ""))
                     except Exception as e:
                         self.__log_function(f"Error during executing the command '{line}'\nCause: " + str(e))
                 else:
-                    self.__log_function("Command not found.")
+                    self.__log_function("Self command not found.")
             else:
-                if cmd.startswith("!"):
-                    self.core.send_to_all(line)
-                else:
-                    self.core.send_to(self.__current_send_location, line)
+                self.__last_response = self.core.send_to(self.__current_send_location, line)
+                self.__log_function(self.__last_response)
 
 def greet(cmd):
     print("Greetings!")
