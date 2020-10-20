@@ -15,9 +15,9 @@ const char *host = "192.168.0.115";
 const uint16_t appLoginPort = 51423;
 const int notYetImplementedResult = 1111;
 const int bufferSize = 30;
-const int nSamples = 1000;
-char ssid[bufferSize] = "your_ssid";
-char pswd[bufferSize] = "your_password";
+const int nSamples = 1200;
+char ssid[bufferSize] = "waT450";
+char pswd[bufferSize] = "password";
 char deviceName[bufferSize] = "mu#1";
 TaskRepository taskRepo;
 
@@ -296,7 +296,7 @@ int startMeasurementHandler(char *in){
     data[i].quat_z = quaternionData.z;
     data[i].quat_w = quaternionData.w;
     
-    delay(5);
+    delay(0);
   }
 
   return 0;
@@ -311,7 +311,8 @@ int printResultsHandler(char *in){
     wr(data[i].quat_x); wr("\t");
     wr(data[i].quat_y); wr("\t");
     wr(data[i].quat_z); wr("\t");
-    wr(data[i].time1); wrln(data[i].time2);
+    wr(data[i].time1); wr("\t");
+    wrln(data[i].time2);
     delay(0);
   }
 
