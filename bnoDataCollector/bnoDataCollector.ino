@@ -16,8 +16,8 @@ const uint16_t appLoginPort = 51423;
 const int notYetImplementedResult = 1111;
 const int bufferSize = 30;
 const int nSamples = 1200;
-char ssid[bufferSize] = "waT450";
-char pswd[bufferSize] = "password";
+char ssid[bufferSize] = "probanet";
+char pswd[bufferSize] = "figyelemezproba";
 char deviceName[bufferSize] = "mu#1";
 TaskRepository taskRepo;
 
@@ -361,10 +361,10 @@ int quaternionOnlyHandler(char *in){
 
   while(true){
     bno055_read_quaternion_wxyz(&oq);
+    Serial.print(oq.w); Serial.print("\t");
     Serial.print(oq.x); Serial.print("\t");
     Serial.print(oq.y); Serial.print("\t");
-    Serial.print(oq.z); Serial.print("\t");
-    Serial.println(oq.w);
+    Serial.println(oq.z);
 
     delay(25);
   }

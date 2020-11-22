@@ -24,6 +24,9 @@ class PipelineElement:
     
     def is_sink(self):
         return self.__is_sink
+    
+    """def is_valid_with_args(self, args_in):
+        return True"""
 
 class PipelineSource(PipelineElement):
     def __init__(self, name):
@@ -48,6 +51,7 @@ class Pipeline:
         self.__name = name
         self.log = logfun
         self.__outputs = []
+        self.log("Created and initialized pipeline with name '" + self.__name + "'.", loglevel = 0)
     
     def execute(self):
         self.log("Executing the pipeline '" + self.__name + "'...")
@@ -61,9 +65,9 @@ class Pipeline:
                     temp_outs.append(step[0].get_output())
                 else:
                     temp_data = checker.data
-                    print("Data set., size: " + str(len(temp_data)))
+                    self.log("Data set., size: " + str(len(temp_data)))
             else:
-                self.log("Error during pipeline execution in the step '" + step[0].get_name()+ "' with args '" + step[1] + "'.\nError code: " + str(checker.return_code) + "\nData was not modified.")
+                self.log("Error during pipeline execution in the step '" + step[0].get_name()+ "' with args '" + step[1] + "'.\nError code: " + str(checker.return_code) + "\nData was not modified.", 3)
                 return
         self.__data = temp_data
         self.log("DONE.")
@@ -74,11 +78,11 @@ class Pipeline:
     def introduce(self, pipeline_element):
         for already_known in Pipeline.__possibilities:
             if already_known.get_name() == pipeline_element.get_name():
-                self.log("I already know an element with the name of '" + already_known.get_name() + "'.")
+                self.log("Could not add pipeline element '" + already_known.get_name() + "' because it already exists.", 2)
                 return
         Pipeline.__possibilities.append(pipeline_element)
         Pipeline.__possibilities[-1].set_log_function(self.log)
-        print("ADDED: " + Pipeline.__possibilities[-1].get_name() + "; Sink: " + str(Pipeline.__possibilities[-1].is_sink()) + "; Source: " + str(Pipeline.__possibilities[-1].is_source()))
+        self.log("Pipeline element added:\t" + Pipeline.__possibilities[-1].get_name() + "\t\tSink: " + str(Pipeline.__possibilities[-1].is_sink()) + "\tSource: " + str(Pipeline.__possibilities[-1].is_source()))
     
     def add_step(self, step_name, step_args = None):
         for pos in Pipeline.__possibilities:
@@ -96,5 +100,12 @@ class Pipeline:
             self.add_step(element_name, args)
     
     def clear_steps(self):
-        self.__steps = []
+        self.__steps.clear()
+    
+    def get_name(self):
+        return self.__name
+    
+    @staticmethod
+    def get_possibilities():
+        return Pipeline.__possibilities
 

@@ -7,7 +7,7 @@ Server = namedtuple("Server", ["name", "ip_and_port"])
 class ControlCore:
     __instance = None
     __login_thread = None
-    __connected_servers = [Server(name="mu1", ip_and_port=("10.42.0.194", 52555))]
+    __connected_servers = [Server(name="mu1", ip_and_port=("192.168.0.111", 52555))]
     __last_response = None
     message_ending_string = "_-_@MSG_END"
 

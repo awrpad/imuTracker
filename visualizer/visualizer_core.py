@@ -1,34 +1,61 @@
-print("Core starting...")
 from pipeline import Pipeline
 from pipeline_elements import *
 
-def myprint(msg):
-    #print("Hello, this is my own print method", msg)
-    print("<- ", msg)
+class VisualizerCore:
+    def __init__(self, read_function, log_function):
+        self.read = read_function
+        self.log = log_function
+        self.p = []
 
-p = Pipeline("TestPipeline", myprint)
-p.introduce(LoadfromfileElement())
-p.introduce(QuaternionPlotterElement())
-p.introduce(AccelPlotterElement())
-p.introduce(SliceElement())
-p.introduce(PrintInfoElement())
-p.introduce(MovingAverageElement())
-p.introduce(AutoHeigthAdjustionElement())
-p.introduce(ConvertElement())
-p.introduce(ZeroizeElement())
+    def add_pipeline(self, name):
+        self.p.append(Pipeline(name, self.log))
+        self.p[-1].introduce(LoadfromfileElement())
+        self.p[-1].introduce(QuaternionPlotterElement())
+        self.p[-1].introduce(AccelPlotterElement())
+        self.p[-1].introduce(SliceElement())
+        self.p[-1].introduce(PrintInfoElement())
+        self.p[-1].introduce(MovingAverageElement())
+        self.p[-1].introduce(AutoHeigthAdjustionElement())
+        self.p[-1].introduce(ConvertElement())
+        self.p[-1].introduce(ZeroizeElement())
+        self.p[-1].introduce(QuaternionAdjustionElement())
+        self.p[-1].introduce(FrameOfReferenceRotationElement())
+        self.p[-1].introduce(AccelToPosElement())
+        self.p[-1].introduce(PosPlotElement())
+        self.p[-1].introduce(ShowPos2DElement())
+        self.p[-1].introduce(SecondIntegralBasedHeigthAdjustionElement())
+        self.p[-1].introduce(OrientationPlotterElement())
+        self.p[-1].introduce(Plot3dMovementElement())
 
-"""p.add_step("test", "213 456 673")
-p.add_step("loadf", "meres444.txt")
+    def get_pipeline(self, name):
+        self.log("Entered core main loop", 0)
+        p = None
+        for pipeline in self.p:
+            if pipeline.get_name() == name:
+                p = pipeline
+                break
+        
+        return p
 
-p.execute()
-#print(p.get_data())"""
-
-print("Core started.")
-cmd = input("~> ")
-while cmd != ":exit":
-    if cmd == ":run":
-        p.execute()
-        p.clear_steps()
-    else:
-        p.parse_string(cmd)
-    cmd = input("~> ")
+    def mainloop(self, name):
+        p = self.get_pipeline(name)
+        
+        if p is None:
+            raise Exception("Nonexistent pipeline in pipeline repository")
+        
+        cmd = self.read()
+        while cmd != ":exit":
+            self.log("Read line: " + cmd, 0)
+            try:    
+                if cmd == ":run":
+                    p.execute()
+                    p.clear_steps()
+                elif cmd == ":clear":
+                    p.clear_steps()
+                else:
+                    p.parse_string(cmd)
+            except Exception as e:
+                self.log("Error during executing pipeline '" + p.get_name() + "'. Cause: " + str(e))
+            
+            cmd = self.read()
+            
