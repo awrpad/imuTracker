@@ -10,7 +10,7 @@ import time
 # Source, reads from the 
 class LoadfromfileElement(PipelineSource):
     def __init__(self):
-        super().__init__("loadf")
+        super().__init__("loadf", "Load file")
     
     def apply(self, data, args = None):
         f = None
@@ -47,7 +47,7 @@ class LoadfromfileElement(PipelineSource):
 
 class QuaternionPlotterElement(PipelineSink):
     def __init__(self):
-        super().__init__("quatplot")
+        super().__init__("quatplot", "Quaternion Plot")
     
     def apply(self, data, args = None):
         print("Quat plot...")
@@ -61,7 +61,7 @@ class QuaternionPlotterElement(PipelineSink):
 
 class AccelPlotterElement(PipelineSink):
     def __init__(self):
-        super().__init__("accplot")
+        super().__init__("accplot", "Acceleration Plot")
     
     def apply(self, data, args = None):
         print("Quat plot...")
@@ -74,7 +74,7 @@ class AccelPlotterElement(PipelineSink):
 
 class PosPlotElement(PipelineSink):
     def __init__(self):
-        super().__init__("posplot")
+        super().__init__("posplot", "Position Plot")
     
     def apply(self, data, args=None):
         plt.plot(ptime(data), pos_x(data), label="PosX")
@@ -86,7 +86,7 @@ class PosPlotElement(PipelineSink):
 
 class OrientationPlotterElement(PipelineSink):
     def __init__(self):
-        super().__init__("orplot")
+        super().__init__("orplot", "Orientation Plot")
     
     def __quaternion_rotate_vpvector__(self, vector, quaternion):
         new_x, new_y, new_z = quaternion.rotate((vector.x, vector.y, vector.z))
@@ -135,7 +135,7 @@ class OrientationPlotterElement(PipelineSink):
 
 class ShowPos2DElement(PipelineSink):
     def __init__(self):
-        super().__init__("pos2d")
+        super().__init__("pos2d", "Show Position in 2D")
     
     def __get_axis__(self, data, axis_str):
         if axis_str == "x":
@@ -161,7 +161,7 @@ class ShowPos2DElement(PipelineSink):
 
 class SliceElement(PipelineElement):
     def __init__(self):
-        super().__init__("slice")
+        super().__init__("slice", "Slice")
     
     def apply(self, data, args = None):
         if type(args) is not str:
@@ -191,7 +191,7 @@ class SliceElement(PipelineElement):
 
 class PrintInfoElement(PipelineElement):
     def __init__(self):
-        super().__init__("printinfo")
+        super().__init__("printinfo", "Print Info")
     
     def apply(self, data, args=None):
         siz = len(data)
@@ -224,7 +224,7 @@ class PrintInfoElement(PipelineElement):
     
 class MovingAverageElement(PipelineElement):
     def __init__(self):
-        super().__init__("mavg")
+        super().__init__("mavg", "Moving Average")
     
     def apply(self, data, args=None):
         if args is None or len(args) < 3:
@@ -271,7 +271,7 @@ class MovingAverageElement(PipelineElement):
 # Applies a moving average then moves the whole signal
 class AutoHeigthAdjustionElement(PipelineElement):
     def __init__(self):
-        super().__init__("aha")
+        super().__init__("aha", "Automatic Heigth Adjustion")
         self.mavg_executer = MovingAverageElement()
 
     def apply(self, data, args=None):
@@ -330,7 +330,7 @@ class AutoHeigthAdjustionElement(PipelineElement):
 
 class ConvertElement(PipelineElement):
     def __init__(self):
-        super().__init__("convert")
+        super().__init__("convert", "Convert To Units of Measurement")
         self.__quaternion_multiplier = 1.0 / (1 << 14)
         self.__acceleration_multiplier = 1.0 / 100.0
     
@@ -360,7 +360,7 @@ class ConvertElement(PipelineElement):
 
 class ZeroizeElement(PipelineElement):
     def __init__(self):
-        super().__init__("zeroize")
+        super().__init__("zeroize", "Zeroize")
     
     def apply(self, data, args=None):
         if args is None or len(args) < 3 or "=" not in args:
@@ -397,7 +397,7 @@ class ZeroizeElement(PipelineElement):
 
 class QuaternionAdjustionElement(PipelineElement):
     def __init__(self):
-        super().__init__("quatadj")
+        super().__init__("quatadj", "Adjust With Quaternion")
     
     def apply(self, data, args=None):
         new_quaternions = []
@@ -438,7 +438,7 @@ class QuaternionAdjustionElement(PipelineElement):
 
 class FrameOfReferenceRotationElement(PipelineElement):
     def __init__(self):
-        super().__init__("forr")
+        super().__init__("forr", "Rotate Frame Of Reference")
     
     def apply(self, data, args=None):
         new_data = []
@@ -455,7 +455,7 @@ class FrameOfReferenceRotationElement(PipelineElement):
 
 class AccelToPosElement(PipelineElement):
     def __init__(self):
-        super().__init__("atop")
+        super().__init__("atop", "Acceleration To Position")
     
     def apply(self, data, args=None):
         posx = second_integral(acc_x(data), time1(data))
@@ -470,7 +470,7 @@ class AccelToPosElement(PipelineElement):
 
 class SecondIntegralBasedHeigthAdjustionElement(PipelineElement):
     def __init__(self):
-        super().__init__("sibha")
+        super().__init__("sibha", "SIBHA")
     
     def sibha(self, acc_values, time_values, value_wanted, tolerance = 0.001):
         adjusted = acc_values
@@ -518,7 +518,7 @@ class SecondIntegralBasedHeigthAdjustionElement(PipelineElement):
 
 class Plot3dMovementElement(PipelineSink):
     def __init__(self):
-        super().__init__("pos3d")
+        super().__init__("pos3d", "Plot Movement in 3D")
     
     def apply(self, data, args=None):
         f = plt.figure()

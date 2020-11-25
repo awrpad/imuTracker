@@ -1,6 +1,0 @@
-this is a test file
-test values
-123 456 678
-lol gecc hahaha
-as wer rtz 
-hello greetings etc

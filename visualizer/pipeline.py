@@ -3,8 +3,9 @@ from collections import namedtuple
 PipelineReturnValue = namedtuple("PipelineReturnValue", ["return_code", "data"])
 
 class PipelineElement:
-    def __init__(self, name, sink = False, source = False):
+    def __init__(self, name, friendly_name = "", sink = False, source = False):
         self.__name = name
+        self.__friendly_name = friendly_name
         self.log = print
         self.__is_source = source
         self.__is_sink = sink
@@ -27,14 +28,17 @@ class PipelineElement:
     
     """def is_valid_with_args(self, args_in):
         return True"""
+    
+    def get_friendly_name(self):
+        return self.__friendly_name
 
 class PipelineSource(PipelineElement):
-    def __init__(self, name):
-        super().__init__(name, source=True)
+    def __init__(self, name, friendly_name = ""):
+        super().__init__(name, friendly_name=friendly_name, source=True)
 
 class PipelineSink(PipelineElement):
-    def __init__(self, name):
-        super().__init__(name, sink=True)
+    def __init__(self, name, friendly_name = ""):
+        super().__init__(name, friendly_name=friendly_name, sink=True)
         self.__out_object = None
     
     def get_output(self):

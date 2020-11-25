@@ -56,7 +56,7 @@ try:
         pipelinename = "Pipeline" + start_timestamp
         core.add_pipeline(pipelinename)
         log("Ready.")
-        core.mainloop("asd")
+        core.mainloop(pipelinename)
     else:
         # Launch GUI
         def log(msg, loglevel = 1):
