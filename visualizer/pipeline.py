@@ -96,6 +96,7 @@ class Pipeline:
         self.log("No step with the name '" + step_name + "'.")
     
     def parse_string(self, line):
+        print("Parsing: " + line)
         elements = line.split("|")
         elements = [x.strip() for x in elements]
         for e in elements:

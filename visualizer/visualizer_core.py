@@ -28,7 +28,6 @@ class VisualizerCore:
         self.p[-1].introduce(Plot3dMovementElement())
 
     def get_pipeline(self, name):
-        self.log("Entered core main loop", 0)
         p = None
         for pipeline in self.p:
             if pipeline.get_name() == name:
@@ -38,6 +37,7 @@ class VisualizerCore:
         return p
 
     def mainloop(self, name):
+        self.log("Entered core main loop", 0)
         p = self.get_pipeline(name)
         
         if p is None:
@@ -48,14 +48,29 @@ class VisualizerCore:
             self.log("Read line: " + cmd, 0)
             try:    
                 if cmd == ":run":
-                    p.execute()
-                    p.clear_steps()
+                    self.run_pipeline(name)
                 elif cmd == ":clear":
-                    p.clear_steps()
+                    self.clear_pipeline(name)
                 else:
-                    p.parse_string(cmd)
+                    self.write_to_peline(name, cmd)
             except Exception as e:
                 self.log("Error during executing pipeline '" + p.get_name() + "'. Cause: " + str(e))
             
             cmd = self.read()
+    
+    # TODO: Break down main loop to smaller functions
+    # The loop functionality should be handled by the CLI module
+
+    def run_pipeline(self, pipeline_name):
+        p = self.get_pipeline(pipeline_name)
+        p.execute()
+        p.clear_steps()
+    
+    def write_to_peline(self, pipeline_name, line):
+        p = self.get_pipeline(pipeline_name)
+        p.parse_string(line)
+    
+    def clear_pipeline(self, pipeline_name):
+        p = self.get_pipeline(pipeline_name)
+        p.clear_steps()
             

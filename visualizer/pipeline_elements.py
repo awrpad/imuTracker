@@ -264,7 +264,6 @@ class MovingAverageElement(PipelineElement):
                 data[i].quat_w, data[i].quat_x, data[i].quat_y, data[i].quat_z,
                 data[i].time1, data[i].time2
             ))
-        self.log("Original length: " + str(len(data)) + ". New length: " + str(len(outarr)))
 
         return PipelineReturnValue(0, outarr)
 
