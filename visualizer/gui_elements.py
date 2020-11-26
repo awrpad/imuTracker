@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from matplotlib.pyplot import title
+from matplotlib.pyplot import fill
+
 import pipeline_elements
 import tkinter as tk
 from tkinter import BooleanVar, StringVar, ttk, filedialog
@@ -54,12 +55,28 @@ class PipelineFrame:
     def __init__(self, root, pipeline_name):
         self.pipeline_name = pipeline_name
         self.root = root
+        self.__elements = {}
+    
+    def log(self, msg, loglevel = 0):
+        self.text_output.config(state=tk.NORMAL)
+        self.text_output.insert("end", msg + "\n")
+        self.text_output.see("end")
+        self.text_output.config(state=tk.DISABLED)
+        self.text_output.update()
+        print(msg)
 
-    def add_view_element(self, element_name):
+    def __delete_element__(self, element):
+        print("BEFORELEN:" + str(len(self.__elements)))
+        print(self.__elements)
+        del(self.__elements[element])
+        element.destroy()
+        print("AFTERLEN:" + str(len(self.__elements)))
+    
+    def add_element_view(self, element_name):
         new_element_frame = tk.LabelFrame(self.frame_pipeline)
         
-        button_delete_element = tk.Button(new_element_frame, text="×", bg="red", padx=1, pady=1, command=new_element_frame.pack_forget)
-        
+        button_delete_element = tk.Button(new_element_frame, text="×", bg="red", padx=1, pady=1, command=lambda: self.__delete_element__(new_element_frame))
+
         new_element = PipelineElementViewRepository(new_element_frame).get_view_for(element_name, new_element_frame)
         element = new_element.get_underlying_element()
         if element.is_sink():
@@ -71,46 +88,65 @@ class PipelineFrame:
 
         new_element_frame.pack(fill="x")
         button_delete_element.pack(side="right", anchor="nw")
-        new_element.get_frame().pack()
+        new_element.get_frame().pack(fill="x")
+
+        self.__elements[new_element_frame] = new_element
     
-    def generate_pipeline_str(self):
-        for c in self.frame_pipeline.winfo_children():
-            print("aaa")
-            for cc in c.winfo_children():
-                print("bbb")
-                try:
-                    print(cc.get_descriptor_str())
-                except:
-                    pass
+    def generate_pipeline_str(self):        
+        pipeline_str = ""
+        for key in self.__elements:
+            pipeline_str += self.__elements[key].get_descriptor_str() + " | "
+        
+        # Not the most beautiful piece of code I've ever written
+        pipeline_str = pipeline_str.strip().strip("|").strip()
+
+        self.log("GENERATED PIPELINE:\n'" + pipeline_str + "'")
+        return pipeline_str
     
     def get(self):
-        # TODO: Actual i/o
-        core = VisualizerCore(input, templog)
-        core.add_pipeline(self.pipeline_name)
-
         self.frame_main = tk.Frame(self.root, bg=StyleScheme.color_background)
-        frame_pipeline_composer = tk.LabelFrame(self.frame_main, text="Pipeline Composer")
+        
+        frame_pipeline_composer = tk.LabelFrame(self.frame_main, text="Pipeline Composer", bg="yellow")
+        self.frame_pipeline = tk.LabelFrame(self.frame_main, text="Pipeline", bg="red")
+        self.frame_pipeline_execution = tk.LabelFrame(self.frame_main, text="Execution", bg="blue")
 
-        self.frame_pipeline = tk.LabelFrame(self.frame_main, text="Pipeline")
         label_pipelinename = tk.Label(self.frame_main, text=self.pipeline_name, font=StyleScheme.font_title)
         listbox_selector = tk.Listbox(frame_pipeline_composer, width=40, height=30)
-        button_add = tk.Button(frame_pipeline_composer, text="Add selected element", command=lambda: self.add_view_element(
+        button_add = tk.Button(frame_pipeline_composer, text="Add selected element", command=lambda: self.add_element_view(
             listbox_selector.get(tk.ACTIVE).replace("(", "").replace(")", "").split()[-1]
         ))
         button_execute = tk.Button(self.frame_pipeline, text="Execute", command=self.generate_pipeline_str)
+        self.text_output = tk.Text(self.frame_pipeline_execution, bg="black", fg="white")
+
+        # Welcome message on the pipeline output
+        self.text_output.insert(tk.END, "Welcome! The output of the pipeline will be shown here.\n")
+        self.text_output.see(tk.END)
+        self.text_output.config(state=tk.DISABLED)
+        self.text_output.update()
+
+        core = VisualizerCore(input, self.log)
+        core.add_pipeline(self.pipeline_name)
         
         possibilities = core.get_pipeline(self.pipeline_name).get_possibilities()
         
         for pos in possibilities:
             listbox_selector.insert(tk.END, pos.get_friendly_name() + " (" + pos.get_name() + ")")
         
-        
-        label_pipelinename.pack(fill="both", expand=0)
-        frame_pipeline_composer.pack(side="left", fill="y")
-        self.frame_pipeline.pack()
+        label_pipelinename.grid(row=0, column=0, columnspan=3, sticky=tk.NSEW)
+        frame_pipeline_composer.grid(row=1, column=0, sticky=tk.NSEW)
+        self.frame_pipeline.grid(row=1, column=1, sticky=tk.NSEW)
+        self.frame_pipeline_execution.grid(row=1, column=2, sticky=tk.NSEW)
+
+        self.frame_main.grid_rowconfigure(0, weight=1)
+        self.frame_main.grid_rowconfigure(1, weight=10)
+        self.frame_main.grid_columnconfigure(0, weight=1)
+        self.frame_main.grid_columnconfigure(1, weight=3)
+        self.frame_main.grid_columnconfigure(2, weight=3)
+
         listbox_selector.pack()
         button_add.pack()
         button_execute.pack()
+        self.text_output.pack()
 
         return self.frame_main
 
@@ -152,7 +188,7 @@ class PipelineElementDescriptor:
             raise Exception("Cannot make descriptor string: Element name is not set.")
 
         toreturn = self.element_name
-        if len(self.args > 0):
+        if len(self.args) > 0:
             toreturn += " "
         for i, arg in enumerate(self.args):
             if i > 0:
@@ -160,6 +196,10 @@ class PipelineElementDescriptor:
             toreturn += arg
         
         return toreturn
+    
+    def clear(self):
+        self.element_name = None
+        self.args.clear()
 
 class ElementView(ABC):
     def __init__(self, root):
@@ -196,6 +236,7 @@ class LoadFileView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
+        self._descriptor.clear()
         return self._descriptor.set_element_name("loadf").add_arg(self.entry_filename.get()).get_str()
 
     def get_underlying_element(self):
@@ -238,6 +279,7 @@ class MovingAverageView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
+        self._descriptor.clear()
         apply_to_axes = ""
         if self.applytox.get():
             apply_to_axes += "x"
@@ -246,7 +288,7 @@ class MovingAverageView(ElementView):
         if self.applytoz.get():
             apply_to_axes += "z"
         
-        return self._descriptor.set_element_name("mavg").add_arg(self.entry_window.get()).add_arg(apply_to_axes)
+        return self._descriptor.set_element_name("mavg").add_arg(self.entry_window.get()).add_arg(apply_to_axes).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.MovingAverageElement()
@@ -264,7 +306,7 @@ class QuaternionPlotterView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
-        return self._descriptor.set_element_name(self.get_underlying_element().get_name())
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.QuaternionPlotterElement()
@@ -282,7 +324,7 @@ class AccelerationPlotterView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
-        return self._descriptor.set_element_name(self.get_underlying_element().get_name())
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.AccelPlotterElement()
@@ -293,14 +335,14 @@ class PositionPlotterView(ElementView):
 
     def get_frame(self):
         self.frame_main = tk.Frame(self._root)
-        self.label_title = tk.Label(self.frame_main, text="xxxxxPosition plot")
+        self.label_title = tk.Label(self.frame_main, text="Position plot")
         self.frame_main.pack(fill="both")
         self.label_title.pack(fill="both")
 
         return self.frame_main
     
     def get_descriptor_str(self):
-        return self._descriptor.set_element_name(self.get_underlying_element().get_name())
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.PosPlotElement()
@@ -323,7 +365,8 @@ class Position2DPlotterView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
-        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).add_arg(self.var_axes.get())
+        self._descriptor.clear()
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).add_arg(self.var_axes.get()).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.ShowPos2DElement()
@@ -341,7 +384,7 @@ class Position3DPlotterView(ElementView):
         return self.frame_main
     
     def get_descriptor_str(self):
-        return self._descriptor.set_element_name(self.get_underlying_element().get_name())
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).get_str()
     
     def get_underlying_element(self):
         return pipeline_elements.Plot3dMovementElement()
