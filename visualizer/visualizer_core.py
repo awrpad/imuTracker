@@ -63,8 +63,10 @@ class VisualizerCore:
 
     def run_pipeline(self, pipeline_name):
         p = self.get_pipeline(pipeline_name)
-        p.execute()
+        return_code = p.execute()
         p.clear_steps()
+
+        return return_code
     
     def write_to_peline(self, pipeline_name, line):
         p = self.get_pipeline(pipeline_name)

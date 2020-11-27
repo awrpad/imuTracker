@@ -61,6 +61,7 @@ class Pipeline:
         self.log("Executing the pipeline '" + self.__name + "'...")
         temp_data = self.__data
         temp_outs = []
+        checker = PipelineReturnValue(0, None)
         for step in self.__steps:
             step[0].set_log_function(self.log)
             checker = step[0].apply(temp_data, step[1])
@@ -72,9 +73,10 @@ class Pipeline:
                     self.log("Data set., size: " + str(len(temp_data)))
             else:
                 self.log("Error during pipeline execution in the step '" + step[0].get_name()+ "' with args '" + step[1] + "'.\nError code: " + str(checker.return_code) + "\nData was not modified.", 3)
-                return
+                return checker.return_code
         self.__data = temp_data
         self.log("DONE.")
+        return checker.return_code
     
     def get_data(self):
         return self.__data

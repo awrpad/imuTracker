@@ -64,7 +64,7 @@ class AccelPlotterElement(PipelineSink):
         super().__init__("accplot", "Acceleration Plot")
     
     def apply(self, data, args = None):
-        print("Quat plot...")
+        print("Acc plot...")
         plt.plot(time1(data), acc_x(data), label="AccX")
         plt.plot(time1(data), acc_y(data), label="AccY")
         plt.plot(time1(data), acc_z(data), label="AccZ")
@@ -279,7 +279,7 @@ class AutoHeigthAdjustionElement(PipelineElement):
             args = "25:20:xyz"
 
         if args is None or len(args) < 5:
-            self.log("Syntax error in moving AutoHeigthAdjustion: the frame and sample length and the axis selection string are required.")
+            self.log("Syntax error in AutoHeigthAdjustion: the frame and sample length and the axis selection string are required.")
             self.log("Correct form example: 'aha 3:4:xy'")
             return PipelineReturnValue(1, None)
         frame = -1
