@@ -798,7 +798,7 @@ class SecondIntegralBasedHeigthAdjustionView(ElementView):
         if val == "":
             return False
         try:
-            int(val)
+            float(val)
         except Exception:
             return False
         
