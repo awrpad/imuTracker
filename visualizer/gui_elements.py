@@ -6,32 +6,17 @@ import tkinter as tk
 from tkinter import BooleanVar, StringVar, ttk, filedialog
 from visualizer_core import VisualizerCore
 
-# This is an implementation for a scrollable tkinter Frame
-# It is from here: https://blog.tecladocode.com/tkinter-scrollable-frames/
-class ScrollableFrame(ttk.Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
-        self._canvas = tk.Canvas(self)
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self._canvas.yview)
-        self.scrollable_frame = tk.Frame(self._canvas, background="red")
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda _: self._canvas.configure(scrollregion=self._canvas.bbox("all"))
-        )
-
-        self._canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        self._canvas.configure(yscrollcommand=scrollbar.set)
-
-        self._canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
 class StyleScheme:
     # Colors
-    color_background = "lightgray"
+    color_background_base = "lightgray"
+    color_background2 = "gray"
+    color_background_viewelement = "palegreen"
+    color_background_frames = "gray25"
+    color_background_title = "gray10"
     color_foreground1 = "white"
     color_foreground2 = "blue"
+    color_foreground_title = "gray80"
+    color_foreground_labelframes = "white"
     color_source_background = "lightblue"
     color_sink_background = "lightyellow"
 
@@ -41,6 +26,32 @@ class StyleScheme:
 
     # Sizes
     size_element_entry_width = 40
+
+# This is an implementation for a scrollable tkinter Frame
+# It is from here: https://blog.tecladocode.com/tkinter-scrollable-frames/
+class ScrollableFrame(ttk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        
+        self._canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self._canvas.yview)
+        self.scrollable_frame = tk.Frame(self._canvas, background=StyleScheme.color_background_frames)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda _: self._canvas.configure(scrollregion=self._canvas.bbox("all"))
+        )
+
+        print(self.size())
+
+        self._canvas.pack(side="left", fill="both", expand=True)
+        self._winid = self._canvas.create_window((0, 4), window=self.scrollable_frame, anchor="nw")
+        self._canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        #self.scrollable_frame.pack(fill="x", expand=True, anchor="nw")
+    
+    def set_width(self, new_width):
+        self._canvas.itemconfigure(self._winid, width=new_width)
 
 class StartFrame:
     def __init__(self, root):
@@ -56,12 +67,12 @@ class StartFrame:
         self.root.select(self.root.index(tk.END) - 1)
     
     def get(self):
-        frame_main = tk.Frame(self.root, bg=StyleScheme.color_background)
-        label_welcome = tk.Label(frame_main, text=self.str_welcome, bg=StyleScheme.color_background, fg=StyleScheme.color_foreground1)
-        label_add_pipeline = tk.Label(frame_main, text=self.str_add_pipeline, bg=StyleScheme.color_background, font=StyleScheme.font_subtitle)
-        label_newpipeline_name = tk.Label(frame_main, text=self.str_newpipeline_name, bg=StyleScheme.color_background)
+        frame_main = tk.Frame(self.root, bg=StyleScheme.color_background_base)
+        label_welcome = tk.Label(frame_main, text=self.str_welcome, bg=StyleScheme.color_background_base, fg=StyleScheme.color_foreground1)
+        label_add_pipeline = tk.Label(frame_main, text=self.str_add_pipeline, bg=StyleScheme.color_background_base, font=StyleScheme.font_subtitle)
+        label_newpipeline_name = tk.Label(frame_main, text=self.str_newpipeline_name, bg=StyleScheme.color_background_base)
         button_create = ttk.Button(frame_main, text=self.str_create, command=lambda: self.__add_pipeline_page__(entry_newpipeline_name.get()))
-        entry_newpipeline_name = tk.Entry(frame_main, width=40, bg=StyleScheme.color_background, fg=StyleScheme.color_foreground2)
+        entry_newpipeline_name = tk.Entry(frame_main, width=40, bg=StyleScheme.color_background_base, fg=StyleScheme.color_foreground2)
 
         label_welcome.configure(font=StyleScheme.font_title)
 
@@ -121,9 +132,9 @@ class PipelineFrame:
         
         new_element_frame.configure(text=element.get_friendly_name())
 
-        new_element_frame.pack(fill="x")
+        new_element_frame.pack(fill="x", padx=8)
         button_delete_element.pack(side="right", anchor="nw")
-        new_element.get_frame().pack(fill="x")
+        new_element.get_frame().pack(fill="x", padx=8)
 
         self.__elements[new_element_frame] = new_element
     
@@ -158,19 +169,26 @@ class PipelineFrame:
             self.log("Execution failed.", 333)
     
     def get(self):
-        self.frame_main = tk.Frame(self.root, bg=StyleScheme.color_background)
+        self.frame_main = tk.Frame(self.root, bg=StyleScheme.color_background_base)
         
-        frame_pipeline_composer = tk.LabelFrame(self.frame_main, text="Pipeline Composer", bg="yellow")
-        frame_container = tk.LabelFrame(self.frame_main, text="Pipeline", bg="black")
+        frame_pipeline_composer = tk.LabelFrame(self.frame_main, text="Pipeline Composer", bg=StyleScheme.color_background_frames, fg=StyleScheme.color_foreground_labelframes)
+        frame_container = tk.LabelFrame(self.frame_main, text="Pipeline", bg=StyleScheme.color_background_frames, fg=StyleScheme.color_foreground_labelframes)
         self.frame_pipeline = ScrollableFrame(frame_container)
-        self.frame_pipeline_execution = tk.LabelFrame(self.frame_main, text="Execution", bg="blue")
+        self.frame_pipeline_execution = tk.LabelFrame(self.frame_main, text="Execution", bg=StyleScheme.color_background_frames, fg=StyleScheme.color_foreground_labelframes)
 
-        label_pipelinename = tk.Label(self.frame_main, text=self.pipeline_name, font=StyleScheme.font_title)
-        listbox_selector = tk.Listbox(frame_pipeline_composer, width=40, height=30)
+        label_pipelinename = tk.Label(
+            self.frame_main,
+            text=self.pipeline_name,
+            font=StyleScheme.font_subtitle,
+            bg=StyleScheme.color_background_title,
+            fg=StyleScheme.color_foreground_title
+        )
+        listbox_selector = tk.Listbox(frame_pipeline_composer, width=40, height=20)
         button_add = tk.Button(frame_pipeline_composer, text="Add selected element", command=lambda: self.add_element_view(
             listbox_selector.get(tk.ACTIVE).replace("(", "").replace(")", "").split()[-1]
         ))
-        button_execute = tk.Button(self.frame_pipeline, text="Execute", command=self.execute_pipeline)
+        button_execute = tk.Button(frame_container, text="Execute", command=self.execute_pipeline)
+        button_generate = tk.Button(frame_container, text="Generate only", command=self.generate_pipeline_str)
         self.text_output = tk.Text(self.frame_pipeline_execution, bg="black", fg="white")
 
         # Welcome message on the pipeline output
@@ -201,19 +219,23 @@ class PipelineFrame:
         label_pipelinename.grid(row=0, column=0, columnspan=3, sticky=tk.NSEW)
         frame_pipeline_composer.grid(row=1, column=0, sticky=tk.NSEW)
         frame_container.grid(row=1, column=1, sticky=tk.NSEW)
+        button_execute.pack(fill="x")
+        button_generate.pack(fill="x")
         self.frame_pipeline.pack(fill="both", expand=True)
         self.frame_pipeline_execution.grid(row=1, column=2, sticky=tk.NSEW)
 
         self.frame_main.grid_rowconfigure(0, weight=0)
         self.frame_main.grid_rowconfigure(1, weight=1)
-        self.frame_main.grid_columnconfigure(0, weight=1)
-        self.frame_main.grid_columnconfigure(1, weight=3)
-        self.frame_main.grid_columnconfigure(2, weight=3)
+        self.frame_main.grid_columnconfigure(0, weight=0)
+        self.frame_main.grid_columnconfigure(1, weight=1)
+        self.frame_main.grid_columnconfigure(2, weight=0)
 
         listbox_selector.pack()
         button_add.pack()
-        button_execute.pack(fill="x")
-        self.text_output.pack(fill="y")
+        
+        self.text_output.pack(fill="y", expand=True)
+
+        #self.frame_pipeline.set_width(self.frame_pipeline.winfo_width())
 
         return self.frame_main
 
@@ -236,6 +258,7 @@ class PipelineElementViewRepository:
         PipelineElementViewRepository.__views.append(AccelToPosView(None))
         PipelineElementViewRepository.__views.append(QuaternionAdjustionView(None))
         PipelineElementViewRepository.__views.append(SecondIntegralBasedHeigthAdjustionView(None))
+        PipelineElementViewRepository.__views.append(ZeroizeView(None))
     
     @staticmethod
     def get_view_for(element_name, root):
@@ -806,3 +829,34 @@ class SecondIntegralBasedHeigthAdjustionView(ElementView):
     
     def get_underlying_element(self):
         return pipeline_elements.SecondIntegralBasedHeigthAdjustionElement()
+
+class ZeroizeView(ElementView):
+    def __init__(self, root):
+        super().__init__(root)
+    
+    def get_frame(self):
+        self.frame_main = tk.Frame(self._root)
+        self.label_index = tk.Label(self.frame_main, text="Zeroize at index")
+        self.entry_index = tk.Entry(self.frame_main)
+        
+        self.frame_main.pack(fill="both")
+        self.label_index.pack(fill="both")
+        self.entry_index.pack(fill="x")
+
+        return self.frame_main
+    
+    def get_descriptor_str(self):
+        index = self.entry_index.get()
+        try:
+            int(index)
+        except Exception:
+            raise Exception("zeroize: Invalid value given for index: '" + index + "'.")
+
+        if int(index) < 0:
+            raise Exception("zeroize: Invalid value given for index: '" + index + "'.")
+
+        self._descriptor.clear()
+        return self._descriptor.set_element_name(self.get_underlying_element().get_name()).add_arg("i=" + index).get_str()
+    
+    def get_underlying_element(self):
+        return pipeline_elements.ZeroizeElement()
