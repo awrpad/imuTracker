@@ -33,8 +33,8 @@ def log_to_file(msg, loglevel):
     except Exception as e:
         logging.error("Error during logging: " + str(e))
 
-def read(msg = ""):
-    return input("~> " + msg)
+#def read(msg = ""):
+#    return input("~> " + msg)
 
 try:
     if vars(args)["cli"]:
@@ -51,12 +51,11 @@ try:
         print("+-------------------------------------------------------------------+")
         
         log("Starting...")
-        from visualizer_core import *
-        core = VisualizerCore(read, log)
         pipelinename = "Pipeline" + start_timestamp
-        core.add_pipeline(pipelinename)
+        from cli_main import *
+        cli = AppCLI(log)
         log("Ready.")
-        core.mainloop(pipelinename)
+        cli.mainloop("Test pipeline")
     else:
         # Launch GUI
         def log(msg, loglevel = 1):

@@ -43,28 +43,35 @@ class ControlCLI:
         f = open(filename, "w")
         f.write(self.__last_response)
         f.close()
+    
+    def add_server(self, line):
+        self.core.add_server(line=line)
 
     def start(self):
         # Setting up commands
         self.__commands["sw"] = self.set_send_location
         self.__commands["listen"] = self.core.listen_to_login
         self.__commands["saveresp"] = self.save_lastrep_to_file
+        self.__commands["addsrv"] = self.add_server
         while True:
             line = self.__read_function(self.__get_location_string__() + "/>").strip()
             cmd = line.split(" ")[0]
-            self_command = (self.__get_location_string__() == "~") or cmd.startswith(":")
+            is_self_command = (self.__get_location_string__() == "~") or cmd.startswith(":")
 
             if cmd.startswith("!"):
                     self.core.send_to_all(line)
                     continue
-            if(self_command):
+            if(is_self_command):
                 if cmd.startswith(":"):
                     cmd = cmd[1:]
                 if cmd == "exit":
                     break
                 elif cmd in self.__commands:
                     try:
-                        self.__commands[cmd](line.replace(cmd + " ", "").replace(":", ""))
+                        args = line.replace(cmd, "").strip()
+                        if args.startswith(":"):
+                            args = args[1:]
+                        self.__commands[cmd](args)
                     except Exception as e:
                         self.__log_function(f"Error during executing the command '{line}'\nCause: " + str(e))
                 else:

@@ -35,32 +35,7 @@ class VisualizerCore:
                 break
         
         return p
-
-    def mainloop(self, name):
-        self.log("Entered core main loop", 0)
-        p = self.get_pipeline(name)
-        
-        if p is None:
-            raise Exception("Nonexistent pipeline in pipeline repository")
-        
-        cmd = self.read()
-        while cmd != ":exit":
-            self.log("Read line: " + cmd, 0)
-            try:    
-                if cmd == ":run":
-                    self.run_pipeline(name)
-                elif cmd == ":clear":
-                    self.clear_pipeline(name)
-                else:
-                    self.write_to_peline(name, cmd)
-            except Exception as e:
-                self.log("Error during executing pipeline '" + p.get_name() + "'. Cause: " + str(e))
-            
-            cmd = self.read()
     
-    # TODO: Break down main loop to smaller functions
-    # The loop functionality should be handled by the CLI module
-
     def run_pipeline(self, pipeline_name):
         p = self.get_pipeline(pipeline_name)
         return_code = p.execute()

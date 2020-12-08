@@ -1,6 +1,6 @@
 #include "TaskUtils.h"
 #include "BNO055_support.h"
-#include <EEPROM.h>
+//#include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 
@@ -228,6 +228,7 @@ int setupChangeHandler(char *in){
 //       109 - Wi-Fi is in process of changing between statuses
 // For further information, see the documentation of the ESP8266WiFi
 int connectToWiFiHandler(char *in){
+  // TODO: First it should disconnect
   wrln("Connecting to WiFi...");  
   wr("\tSSID: "); wrln(ssid);
   WiFi.mode(WIFI_STA);

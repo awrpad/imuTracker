@@ -74,6 +74,44 @@ class ControlCore:
     
     def listen_to_login(self, line):
         listen_to_login_port()
+    
+    def add_server(self, server=None, line=None):
+        print("Adding: ", server, line)
+        if server is not None and line is not None:
+            raise Exception("Both the 'server' and 'line' parameters are set but exactly one of them should be.")
+        if server is None and line is None:
+            raise Exception("Both the 'server' and 'line' parameters are NOT set but exactly one of them should be.")
+
+        server_to_add = server
+        # If the server's parameters came in as a string, turn it into a Server object
+        if line is not None:
+            # The arguments and the command should be separated by a 'space' character
+            args = line.split()[-1]
+            # The server's properties should be separated by a ':' character
+            argparts = args.split(":")
+            if len(argparts) != 3:
+                raise Exception("Invalid number of server properties. The server to add has to have exactly 3 properties separated by a ':' in this order: 'NAME:IPNUMBER:PORTNUMBER'")
+
+            try:
+                # Port number should be an integer
+                argparts[2] = int(argparts[2])
+            except Exception as e:
+                raise Exception("Port number should be an integer but it could not be converted. Cause: " + str(e))
+
+            # TODO: Range check for portnumber
+            # TODO: IP adress validation
+
+            server_to_add = Server(name=argparts[0], ip_and_port=(argparts[1], argparts[2]))
+        
+        for s in self.__connected_servers:
+            if server_to_add.name == s.name:
+                raise Exception(f"Device with name '{server_to_add.name}' already exists.")
+            if server_to_add.ip_and_port == s.ip_and_port:
+                raise Exception(f"Device with ip address - port number pair '{server_to_add.ip_and_port}' already exists.")
+        
+        self.__connected_servers.append(server_to_add)
+        print("Added server:\n", self.__connected_servers[-1])
+
 
 def listen_to_login_port():
     host_ip = "192.168.0.115"

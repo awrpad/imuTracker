@@ -3,12 +3,12 @@ from collections import namedtuple
 PipelineReturnValue = namedtuple("PipelineReturnValue", ["return_code", "data"])
 
 class PipelineElement:
-    def __init__(self, name, friendly_name = "", sink = False, source = False):
+    def __init__(self, name, friendly_name = "", is_sink = False, is_source = False):
         self.__name = name
         self.__friendly_name = friendly_name
         self.log = print
-        self.__is_source = source
-        self.__is_sink = sink
+        self.__is_source = is_source
+        self.__is_sink = is_sink
     #@abstractmethod
     def apply(self, data, args = None):
         self.log("Hello, I am " + self.__name + ". Got arg: " + str(args))
@@ -16,6 +16,9 @@ class PipelineElement:
 
     def get_name(self):
         return self.__name
+
+    def get_friendly_name(self):
+        return self.__friendly_name
     
     def set_log_function(self, logfun):
         self.log = logfun
@@ -28,17 +31,14 @@ class PipelineElement:
     
     """def is_valid_with_args(self, args_in):
         return True"""
-    
-    def get_friendly_name(self):
-        return self.__friendly_name
 
 class PipelineSource(PipelineElement):
     def __init__(self, name, friendly_name = ""):
-        super().__init__(name, friendly_name=friendly_name, source=True)
+        super().__init__(name, friendly_name=friendly_name, is_source=True)
 
 class PipelineSink(PipelineElement):
     def __init__(self, name, friendly_name = ""):
-        super().__init__(name, friendly_name=friendly_name, sink=True)
+        super().__init__(name, friendly_name=friendly_name, is_sink=True)
         self.__out_object = None
     
     def get_output(self):
@@ -87,7 +87,7 @@ class Pipeline:
                 self.log("Could not add pipeline element '" + already_known.get_name() + "' because it already exists.", 2)
                 return
         Pipeline.__possibilities.append(pipeline_element)
-        Pipeline.__possibilities[-1].set_log_function(self.log)
+        #Pipeline.__possibilities[-1].set_log_function(self.log)
         self.log("Pipeline element added:\t" + Pipeline.__possibilities[-1].get_name() + "\t\tSink: " + str(Pipeline.__possibilities[-1].is_sink()) + "\tSource: " + str(Pipeline.__possibilities[-1].is_source()))
     
     def add_step(self, step_name, step_args = None):
@@ -98,7 +98,6 @@ class Pipeline:
         self.log("No step with the name '" + step_name + "'.")
     
     def parse_string(self, line):
-        print("Parsing: " + line)
         elements = line.split("|")
         elements = [x.strip() for x in elements]
         for e in elements:
