@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from typing_extensions import IntVar
+#from typing_extensions import IntVar
 import pipeline_elements
 import tkinter as tk
 from tkinter import BooleanVar, StringVar, ttk, filedialog
